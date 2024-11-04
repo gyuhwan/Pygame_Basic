@@ -60,3 +60,5 @@ window.geometry("300x250")
 # 복사 상태를 표시할 레이블
 copy_status_label = ttk.Label(window, text="")
 copy_status_label.pack(pady=5)
+
+#겔럭시북
