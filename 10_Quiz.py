@@ -77,7 +77,7 @@ while running:
             ddong[1] = ddong[1] + 5
         else:
             ddong_list.remove(ddong)
-            delay -= 5    
+            delay -= 5
         ##########################################
         #  5. 충돌 처리
         if (
