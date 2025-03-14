@@ -73,7 +73,7 @@ class TextBox:
         self.text = []
         self.visible_lines = height // font.get_height()
         self.scroll_bar = ScrollBar(x + width - 20, y, 20, height, 
-                                  0, self.visible_lines * font.get_height())
+                                  height, self.visible_lines * font.get_height())
         self.active = False
         
     def add_text(self, text):

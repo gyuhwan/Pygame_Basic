@@ -1,64 +1,126 @@
-import random
 import tkinter as tk
 from tkinter import ttk
+import random
+from datetime import datetime
 
+class PowerballViewer:
+    def __init__(self, root):
+        self.root = root
+        self.root.title("Powerball Number Viewer")
+        
+        # 메인 프레임
+        self.main_frame = ttk.Frame(root, padding="10")
+        self.main_frame.grid(row=0, column=0, sticky=(tk.N, tk.S, tk.E, tk.W))
+        
+        # 왼쪽 프레임 (번호 표시)
+        self.left_frame = ttk.LabelFrame(self.main_frame, text="Generated Numbers", padding="5")
+        self.left_frame.grid(row=0, column=0, sticky=(tk.N, tk.S, tk.E, tk.W), padx=(0, 5))
+        
+        # 오른쪽 프레임 (히스토리)
+        self.right_frame = ttk.LabelFrame(self.main_frame, text="Number History", padding="5")
+        self.right_frame.grid(row=0, column=1, sticky=(tk.N, tk.S, tk.E, tk.W), padx=(5, 0))
+        
+        # 번호 표시 레이블들
+        self.number_labels = []
+        for i in range(5):
+            label = ttk.Label(
+                self.left_frame,
+                text="--",
+                width=3,
+                style='Number.TLabel',
+                background='white',
+                relief='solid'
+            )
+            label.grid(row=0, column=i, padx=5, pady=10)
+            self.number_labels.append(label)
+        
+        # Powerball 번호 레이블
+        self.powerball_label = ttk.Label(
+            self.left_frame,
+            text="--",
+            width=3,
+            style='Powerball.TLabel',
+            background='red',
+            foreground='white',
+            relief='solid'
+        )
+        self.powerball_label.grid(row=0, column=5, padx=5, pady=10)
+        
+        # 생성 버튼
+        self.generate_button = ttk.Button(
+            self.left_frame,
+            text="Generate Numbers",
+            command=self.generate_numbers
+        )
+        self.generate_button.grid(row=1, column=0, columnspan=6, pady=10)
+        
+        # 히스토리 텍스트 영역
+        self.history_text = tk.Text(
+            self.right_frame,
+            wrap=tk.WORD,
+            width=40,
+            height=20
+        )
+        self.history_scroll = ttk.Scrollbar(
+            self.right_frame,
+            orient=tk.VERTICAL,
+            command=self.history_text.yview
+        )
+        
+        # 스크롤바 연결
+        self.history_text.configure(yscrollcommand=self.history_scroll.set)
+        
+        # 히스토리 위젯 배치
+        self.history_text.grid(row=0, column=0, sticky=(tk.N, tk.S, tk.E, tk.W))
+        self.history_scroll.grid(row=0, column=1, sticky=(tk.N, tk.S))
+        
+        # 그리드 가중치 설정
+        self.main_frame.columnconfigure(1, weight=1)
+        self.main_frame.rowconfigure(0, weight=1)
+        self.right_frame.columnconfigure(0, weight=1)
+        self.right_frame.rowconfigure(0, weight=1)
+        root.columnconfigure(0, weight=1)
+        root.rowconfigure(0, weight=1)
+        
+        # 스타일 설정
+        self.setup_styles()
+        
+    def setup_styles(self):
+        style = ttk.Style()
+        style.configure('Number.TLabel', font=('Arial', 14, 'bold'), anchor='center')
+        style.configure('Powerball.TLabel', font=('Arial', 14, 'bold'), anchor='center')
+        
+    def generate_numbers(self):
+        # 흰 공 번호 생성 (1-69, 중복 없이 5개)
+        white_balls = sorted(random.sample(range(1, 70), 5))
+        
+        # Powerball 번호 생성 (1-26)
+        powerball = random.randint(1, 26)
+        
+        # 레이블 업데이트
+        for i, num in enumerate(white_balls):
+            self.number_labels[i].configure(text=f"{num:02d}")
+        
+        self.powerball_label.configure(text=f"{powerball:02d}")
+        
+        # 히스토리에 추가
+        timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        numbers_str = " ".join(f"{num:02d}" for num in white_balls)
+        history_entry = f"[{timestamp}]\n{numbers_str} | {powerball:02d}\n\n"
+        self.history_text.insert("1.0", history_entry)
 
-def generate_lotto():
-    # 로또 번호를 저장할 리스트 생성
-    lotto_numbers = []
-    # 1부터 45까지의 숫자 중에서 6개를 무작위로 선택
-    while len(lotto_numbers) < 6:
-        number = random.randint(1, 45)
-        if number not in lotto_numbers:
-            lotto_numbers.append(number)
-    # 번호를 오름차순으로 정렬
-    lotto_numbers.sort()
-    # 결과 레이블 업데이트
-    result_label.config(text="추천 번호: " + ", ".join(map(str, lotto_numbers)))
+def main():
+    root = tk.Tk()
+    app = PowerballViewer(root)
+    
+    # 테마 설정
+    try:
+        style = ttk.Style()
+        style.theme_use('clam')
+    except:
+        pass
+    
+    root.mainloop()
 
-
-def copy_numbers():
-    current_numbers = result_label.cget("text")
-    if "추천 번호:" in current_numbers:
-        # 클립보드에 복사
-        window.clipboard_clear()
-        window.clipboard_append(current_numbers.split(": ")[1])
-        # 복사 완료 메시지 표시
-        copy_status_label.config(text="번호가 클립보드에 복사되었습니다!")
-    else:
-        copy_status_label.config(text="복사할 번호가 없습니다.")
-
-
-# GUI 윈도우 생성
-window = tk.Tk()
-window.title("로또 번호 생성기")
-window.geometry("300x150")
-
-# 스타일 설정
-style = ttk.Style()
-style.configure("TButton", padding=10, font=('맑은 고딕', 10))
-style.configure("TLabel", font=('맑은 고딕', 12))
-
-# 버튼 생성
-generate_button = ttk.Button(window, text="번호 생성하기", command=generate_lotto)
-generate_button.pack(pady=20)
-# 복사 버튼 생성
-copy_button = ttk.Button(window, text="번호 복사하기", command=copy_numbers)
-copy_button.pack(pady=10)
-
-# 결과를 표시할 레이블
-result_label = ttk.Label(window, text="버튼을 클릭하여 번호를 생성하세요")
-result_label.pack(pady=20)
-
-
-# GUI 실행
-window.mainloop()
-
-# 창 크기 조정
-window.geometry("300x250")
-
-# 복사 상태를 표시할 레이블
-copy_status_label = ttk.Label(window, text="")
-copy_status_label.pack(pady=5)
-
-#겔럭시북
+if __name__ == "__main__":
+    main()
